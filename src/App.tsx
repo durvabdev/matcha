@@ -63,7 +63,7 @@ export default function App({ initialEmail }: { initialEmail: string | null }) {
       </section>
 
       <section className="t-page" data-page-id="2" aria-label="Welcome">
-        <div className="flex h-svh flex-col bg-[var(--bg)]">
+        <div className="flex h-svh flex-col bg-[var(--kiln)]">
           <header className="flex items-center justify-between px-6 py-6 sm:px-10">
             <span className="font-display text-xl text-[var(--text-primary)]">matcha</span>
             <button
