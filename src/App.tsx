@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/navbar'
 import { Login, type LoginFormData } from '@/components/easyui/login'
-import { PlanIndicator, type CompanyPlan } from '@/components/plan-indicator'
+import { PlanIndicator, UpgradeDialog, type CompanyPlan } from '@/components/plan-indicator'
+import { SearchBox } from '@/components/search-panel'
 import { login, logout } from '@/app/actions'
 
 function nameFromEmail(email: string) {
@@ -15,14 +16,17 @@ function nameFromEmail(email: string) {
 export default function App({
   initialEmail,
   initialPlan,
+  initialUpgrade = false,
 }: {
   initialEmail: string | null
   initialPlan?: CompanyPlan
+  initialUpgrade?: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState<string | null>(initialEmail ? nameFromEmail(initialEmail) : null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [upgrade, setUpgrade] = useState(initialUpgrade)
 
   async function handleSubmit({ email, password }: LoginFormData) {
     setError(null)
@@ -75,16 +79,18 @@ export default function App({
         </div>
       </section>
 
-      <section className="t-page" data-page-id="2" aria-label="Welcome">
-        <div className="flex h-svh flex-col bg-[var(--kiln)]">
+      <section className="t-page overflow-y-auto" data-page-id="2" aria-label="Welcome">
+        <div className="flex min-h-full flex-col bg-[var(--kiln)]">
           <NavBar onSignOut={handleSignOut} />
-          <div className="flex h-1/2 flex-col justify-center px-6 sm:px-10">
-            <strong className="t-stagger-line t-stagger-line--1 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
+          <div className="flex flex-1 flex-col px-6 pb-16 sm:px-10">
+            <strong className="t-stagger-line t-stagger-line--1 mt-8 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
               welcome {name}
             </strong>
             {name && initialPlan && <PlanIndicator plan={initialPlan} />}
+            {name && <SearchBox />}
           </div>
         </div>
+        <UpgradeDialog open={upgrade} onClose={() => setUpgrade(false)} />
       </section>
     </div>
   )

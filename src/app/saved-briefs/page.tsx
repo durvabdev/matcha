@@ -3,12 +3,10 @@ import { notFound, redirect } from 'next/navigation'
 import { recruiterFromToken } from '@/lib/auth'
 import { listSavedBriefs } from '@/lib/saved-briefs/service'
 import { NavBar } from '@/components/navbar'
+import { RunSearch } from '@/components/run-search'
+import { formatFilterChip } from '@/lib/search/format'
 
 type Brief = { id: string; brief: string; filters: Record<string, unknown>; created_at: string }
-
-// minYearsExperience: 5 -> "min years experience: 5"; arrays are comma-joined.
-const chip = ([key, value]: [string, unknown]) =>
-  `${key.replace(/([A-Z])/g, ' $1').toLowerCase()}: ${Array.isArray(value) ? value.join(', ') : value}`
 
 export default async function SavedBriefsPage() {
   const r = await recruiterFromToken((await cookies()).get('matcha_session')?.value)
@@ -35,15 +33,18 @@ export default async function SavedBriefsPage() {
                 <li key={b.id} className="rounded-2xl border border-white/10 bg-black px-6 py-5">
                   <div className="flex items-baseline gap-4">
                     <p className="min-w-0 flex-1 text-2xl font-medium">{b.brief}</p>
-                    <time dateTime={b.created_at} className="shrink-0 text-lg text-[var(--foam)]/60">
-                      {new Date(b.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
-                    </time>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <time dateTime={b.created_at} className="text-lg text-[var(--foam)]/60">
+                        {new Date(b.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+                      </time>
+                      <RunSearch brief={b.brief} filters={b.filters} />
+                    </div>
                   </div>
                   {filters.length > 0 && (
                     <ul className="mt-4 flex flex-wrap gap-2">
                       {filters.map((f) => (
                         <li key={f[0]} className="rounded-full bg-[var(--powder)] px-3 py-1 text-base text-[var(--paper)]">
-                          {chip(f)}
+                          {formatFilterChip(f[0], f[1])}
                         </li>
                       ))}
                     </ul>

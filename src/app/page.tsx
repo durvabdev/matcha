@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import App from '@/App'
 import type { CompanyPlan } from '@/components/plan-indicator'
 import { recruiterFromToken } from '@/lib/auth'
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; upgrade?: string }>
+}) {
+  const q = await searchParams
   const token = (await cookies()).get('matcha_session')?.value
   let email: string | null = null
   let initialPlan: CompanyPlan | undefined
@@ -26,5 +32,7 @@ export default async function Page() {
       else if (plan) initialPlan = { plan: 'free', searches_remaining: Math.max(0, 1 - plan.searches_used) }
     }
   }
-  return <App initialEmail={email} initialPlan={initialPlan} />
+  if (typeof q.search === 'string' && q.search) redirect(`/search/${q.search}`)
+  const initialUpgrade = q.upgrade === '1' || q.upgrade === 'true'
+  return <App initialEmail={email} initialPlan={initialPlan} initialUpgrade={initialUpgrade} />
 }

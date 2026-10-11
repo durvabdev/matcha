@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireRecruiter } from '@/lib/auth'
-import { createSavedBriefBody } from '@/lib/saved-briefs/schema'
+import { createSavedBriefBody, parseSearchFilters, toStoredFilters } from '@/lib/saved-briefs/schema'
 import { createSavedBrief, listSavedBriefs } from '@/lib/saved-briefs/service'
 
 const MAX_BODY_CHARS = 16 * 1024
@@ -25,7 +25,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request', issues }, { status: 400 })
   }
 
-  const { data, error } = await createSavedBrief(c.db, c.companyId, parsed.data)
+  const filters = parseSearchFilters(parsed.data.filters)
+  if (!filters.success) {
+    const issues = filters.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }))
+    return NextResponse.json({ error: 'Invalid request', issues }, { status: 400 })
+  }
+
+  const { data, error } = await createSavedBrief(c.db, c.companyId, {
+    brief: parsed.data.brief,
+    filters: toStoredFilters(filters.data),
+  })
   if (error) return NextResponse.json({ error: 'Failed to save brief' }, { status: 500 })
 
   return NextResponse.json(data, { status: 201 })

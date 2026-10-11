@@ -32,19 +32,26 @@ export async function ownedShortlist(req: NextRequest, shortlistId: string) {
   return { db: c.db }
 }
 
+// Bearer, parsed cookie, or raw Cookie header (Node fetch / undici often skip NextRequest.cookies).
+export function requestToken(req: NextRequest) {
+  const bearer = req.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1]
+  if (bearer) return bearer
+  const cookie = req.cookies.get('matcha_session')?.value
+  if (cookie) return cookie
+  return req.headers.get('cookie')?.match(/(?:^|;\s*)matcha_session=([^;]+)/)?.[1]
+}
+
 // Bearer token for API clients, session cookie for the browser.
 export async function recruiterDb(req: NextRequest) {
-  const bearer = req.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1]
-  const r = await recruiterFromToken(bearer ?? req.cookies.get('matcha_session')?.value)
+  const r = await recruiterFromToken(requestToken(req))
   if (r.error === 'login') return { error: NextResponse.redirect(new URL('/', req.url)) }
   if (r.error) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   return r
 }
 
-// JSON-API variant: Bearer token only, 401 (not a redirect) when it is missing or invalid.
+// JSON-API variant: Bearer or session cookie; 401 (not a redirect) when missing or invalid.
 export async function requireRecruiter(req: NextRequest) {
-  const token = req.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1]
-  const r = await recruiterFromToken(token)
+  const r = await recruiterFromToken(requestToken(req))
   if (r.error === 'login') return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   if (r.error) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   return r

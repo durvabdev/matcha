@@ -8,17 +8,54 @@ export type CompanyPlan =
   | { plan: 'paid'; searches_remaining: null }
   | { plan: 'free'; searches_remaining: number }
 
+export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 px-6 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-title"
+        className="w-full max-w-lg rounded-2xl border border-white/15 bg-black/75 p-6 text-[var(--paper)] shadow-xl backdrop-blur-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <h2 id="upgrade-title" className="text-xl font-semibold">Upgrade your plan</h2>
+          <button type="button" aria-label="Close" className="focus-ring rounded-sm text-[var(--paper)]/60 hover:text-[var(--paper)]" onClick={onClose}>
+            <X className="size-5" />
+          </button>
+        </div>
+        <p className="mt-3 text-base">Unlock unlimited candidate searches with a paid plan.</p>
+        <ul className="mt-4 space-y-2 text-base">
+          <li className="flex items-center gap-2"><Check className="size-4 text-[var(--foam)]" /> Unlimited candidate searches</li>
+          <li className="flex items-center gap-2"><Check className="size-4 text-[var(--foam)]" /> No one-search free-plan restriction</li>
+        </ul>
+        <p className="mt-5 text-sm text-[var(--paper)]/60">
+          Upgrades are simulated in this demo. Subscription status is updated through verified Stripe webhook events. No payment is required.
+        </p>
+        <Button variant="secondary" fullWidth className="mt-6 rounded-full border-white/20 bg-black/80 text-[var(--paper)] backdrop-blur-md hover:bg-black" onClick={onClose}>
+          Got it
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function PlanIndicator({ plan }: { plan: CompanyPlan }) {
   const [open, setOpen] = useState(false)
   const free = plan.plan === 'free'
   const left = free ? plan.searches_remaining : 0
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open])
 
   return (
     <>
@@ -56,39 +93,7 @@ export function PlanIndicator({ plan }: { plan: CompanyPlan }) {
           </div>
         )}
       </div>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 px-6 backdrop-blur-md"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="upgrade-title"
-            className="w-full max-w-lg rounded-2xl border border-white/15 bg-black/75 p-6 text-[var(--paper)] shadow-xl backdrop-blur-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <h2 id="upgrade-title" className="text-xl font-semibold">Upgrade your plan</h2>
-              <button type="button" aria-label="Close" className="focus-ring rounded-sm text-[var(--paper)]/60 hover:text-[var(--paper)]" onClick={() => setOpen(false)}>
-                <X className="size-5" />
-              </button>
-            </div>
-            <p className="mt-3 text-base">Unlock unlimited candidate searches with a paid plan.</p>
-            <ul className="mt-4 space-y-2 text-base">
-              <li className="flex items-center gap-2"><Check className="size-4 text-[var(--foam)]" /> Unlimited candidate searches</li>
-              <li className="flex items-center gap-2"><Check className="size-4 text-[var(--foam)]" /> No one-search free-plan restriction</li>
-            </ul>
-            <p className="mt-5 text-sm text-[var(--paper)]/60">
-              Upgrades are simulated in this demo. Subscription status is updated through verified Stripe webhook events. No payment is required.
-            </p>
-            <Button variant="secondary" fullWidth className="mt-6 rounded-full border-white/20 bg-black/80 text-[var(--paper)] backdrop-blur-md hover:bg-black" onClick={() => setOpen(false)}>
-              Got it
-            </Button>
-          </div>
-        </div>
-      )}
+      <UpgradeDialog open={open} onClose={() => setOpen(false)} />
     </>
   )
 }
