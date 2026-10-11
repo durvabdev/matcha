@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireRecruiter } from '@/lib/auth'
 import { parseSearchFilters, searchRequestBody, toStoredFilters } from '@/lib/search/schema'
 import { extractFilters } from '@/lib/search/extractor'
-import { createSearch, getSearchPage, previewSearch } from '@/lib/search/service'
+import { companySearchesRemaining, createSearch, getSearchPage, previewSearch } from '@/lib/search/service'
 import { createSavedBrief, findLatestSearchForBrief } from '@/lib/saved-briefs/service'
 
 const MAX_BODY_CHARS = 16 * 1024
@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await findLatestSearchForBrief(c.db, body.data.brief)
     if (existing?.search_id) {
       const page = await getSearchPage(c.db, existing.search_id, 1)
-      if (!('error' in page)) return NextResponse.json(page)
+      if (!('error' in page)) {
+        const searches_remaining = await companySearchesRemaining(c.db, c.companyId)
+        return NextResponse.json({ ...page, searches_remaining })
+      }
     }
   }
 
@@ -43,6 +46,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.data.preview) {
+    if (!body.data.search_id) return NextResponse.json({ error: 'Search quota exceeded' }, { status: 402 })
+    const { data: owned } = await c.db.from('searches').select('id').eq('id', body.data.search_id).maybeSingle()
+    if (!owned) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     const page = body.data.page ?? 1
     const result = await previewSearch(c.db, toStoredFilters(parsed.data), page)
     if (result.error) return NextResponse.json({ error: 'Failed to load search' }, { status: 500 })

@@ -20,9 +20,9 @@ export async function recruiterFromToken(token: string | undefined) {
   return { db, userId, companyId: recruiter.company_id as string }
 }
 
-// recruiterDb + the shortlist must exist (404) and belong to the caller (403).
+// The shortlist must exist (404) and belong to the caller (403).
 export async function ownedShortlist(req: NextRequest, shortlistId: string) {
-  const c = await recruiterDb(req)
+  const c = await requireRecruiter(req)
   if (c.error) return { error: c.error }
 
   const { data } = await c.db.from('shortlists').select('recruiter_id').eq('id', shortlistId).maybeSingle()
@@ -41,15 +41,7 @@ export function requestToken(req: NextRequest) {
   return req.headers.get('cookie')?.match(/(?:^|;\s*)matcha_session=([^;]+)/)?.[1]
 }
 
-// Bearer token for API clients, session cookie for the browser.
-export async function recruiterDb(req: NextRequest) {
-  const r = await recruiterFromToken(requestToken(req))
-  if (r.error === 'login') return { error: NextResponse.redirect(new URL('/', req.url)) }
-  if (r.error) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
-  return r
-}
-
-// JSON-API variant: Bearer or session cookie; 401 (not a redirect) when missing or invalid.
+// JSON API: Bearer or session cookie; 401 (not a redirect) when missing or invalid.
 export async function requireRecruiter(req: NextRequest) {
   const r = await recruiterFromToken(requestToken(req))
   if (r.error === 'login') return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }

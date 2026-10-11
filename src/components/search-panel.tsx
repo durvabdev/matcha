@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { ThinkingOrb } from 'thinking-orbs'
 import { Button } from '@/components/easyui/button'
 import { PillNavigation } from '@/components/ui/pill-navigation'
 import type { SearchFilters } from '@/lib/saved-briefs/schema'
+import { STATE_CODES, STATE_LABEL } from '@/lib/search/states'
 
 const PAGE_SIZE = 20
 
@@ -40,6 +41,7 @@ type Candidate = {
 
 type SearchPayload = {
   search_id: string
+  brief?: string | null
   filters: SearchFilters
   unsupported?: string[]
   total: number
@@ -48,8 +50,8 @@ type SearchPayload = {
 }
 
 const pill =
-  'flex h-12 items-center gap-3 rounded-full border border-[var(--paper)]/15 bg-white px-4 transition-[width,border-color] duration-300 focus-within:border-[var(--paper)]/40'
-const pillInput = 'w-full min-w-0 flex-1 bg-transparent text-lg text-[var(--paper)] outline-none placeholder:text-[var(--paper)]/40'
+  'flex h-12 items-center gap-3 rounded-full border-2 border-[var(--paper)] bg-[var(--powder)] px-4 transition-[width,border-color] duration-300'
+const pillInput = 'w-full min-w-0 flex-1 bg-transparent text-lg font-medium text-[var(--paper)] outline-none placeholder:font-medium placeholder:text-[var(--paper)]/70'
 
 function pageItems(page: number, count: number) {
   const start = count <= 12 ? 1 : Math.max(1, Math.min(page - 4, count - 11))
@@ -74,6 +76,9 @@ const ENUMS: Partial<Record<keyof SearchFilters, readonly string[]>> = {
   seniority: ['junior', 'mid', 'senior', 'staff'],
   company_type: ['startup', 'enterprise'],
   degree: ['BA', 'BS', 'MBA', 'MS', 'PhD'],
+  city: ['Atlanta', 'Austin', 'Boston', 'Chicago', 'Denver', 'Los Angeles', 'Miami', 'New York', 'San Francisco', 'Seattle'],
+  state: STATE_CODES,
+  country: ['US'],
 }
 const YEAR_MAX = 30
 const YEAR_OPEN = { min: 0, max: YEAR_MAX }
@@ -118,15 +123,16 @@ const rangeInput = 'years-range absolute inset-0 w-full'
 
 function textDraft(key: keyof SearchFilters, value: unknown) {
   if (value == null) return ''
-  if (key === 'skills' && Array.isArray(value)) return value.join(', ')
   return typeof value === 'string' ? value : ''
 }
 
+function withSkill(list: string[], raw: string) {
+  const skill = raw.trim().slice(0, 50)
+  if (!skill || list.length >= 20 || list.some((s) => s.toLowerCase() === skill.toLowerCase())) return list
+  return [...list, skill]
+}
+
 function editedValue(key: keyof SearchFilters, draft: string, years: { min: number; max: number }) {
-  if (key === 'skills') {
-    const skills = draft.split(',').map((s) => s.trim().slice(0, 50)).filter(Boolean).slice(0, 20)
-    return skills.length ? skills : undefined
-  }
   if (key === 'years_experience') return yearsFilter(years)
   if (ENUMS[key]) return ENUMS[key]!.includes(draft) ? draft : undefined
   const max = key === 'city' || key === 'state' || key === 'country' ? 100 : 200
@@ -136,7 +142,7 @@ function editedValue(key: keyof SearchFilters, draft: string, years: { min: numb
 
 const chip = 'inline-flex h-9 max-w-full items-center gap-2 rounded-full border px-3 text-sm'
 const chipOff = 'border-[var(--paper)]/15 bg-[var(--paper)]/5 text-[var(--paper)]'
-const chipOn = 'border-[#173028] bg-[#173028] font-semibold text-white'
+const chipOn = 'border-[var(--paper)] bg-[var(--powder)] font-semibold text-[var(--paper)]'
 
 function FilterPill({
   filterKey,
@@ -156,16 +162,9 @@ function FilterPill({
   onApply: (next: unknown) => void
 }) {
   const [draft, setDraft] = useState('')
+  const [skills, setSkills] = useState<string[]>([])
   const [years, setYears] = useState(YEAR_OPEN)
   const on = filterKey === 'open_to_work' ? value === true : value != null
-
-  if (filterKey === 'role') {
-    return (
-      <span className={`${chip} ${on ? chipOn : chipOff}`}>
-        {label}
-      </span>
-    )
-  }
 
   if (filterKey === 'open_to_work') {
     return (
@@ -183,6 +182,7 @@ function FilterPill({
 
   function toggle() {
     setDraft(textDraft(filterKey, value))
+    setSkills(filterKey === 'skills' && Array.isArray(value) ? value.filter((s): s is string => typeof s === 'string') : [])
     setYears(yearsDraft(value))
     onToggle()
   }
@@ -197,9 +197,14 @@ function FilterPill({
       </button>
       {open && (
         <form
-          className={`absolute left-0 top-11 z-20 rounded-xl border border-[var(--paper)]/15 bg-white p-3 shadow-xl ${filterKey === 'years_experience' ? 'w-72' : 'w-64'}`}
+          className={`absolute left-0 top-11 z-20 rounded-xl border border-[var(--paper)]/15 bg-white p-3 shadow-xl ${filterKey === 'years_experience' || filterKey === 'skills' ? 'w-72' : 'w-64'}`}
           onSubmit={(e) => {
             e.preventDefault()
+            if (filterKey === 'skills') {
+              const next = withSkill(skills, draft)
+              onApply(next.length ? next : undefined)
+              return
+            }
             onApply(editedValue(filterKey, draft, years))
           }}
         >
@@ -237,10 +242,38 @@ function FilterPill({
           ) : options ? (
             <select className={field} value={draft} aria-label={label} onChange={(e) => setDraft(e.target.value)}>
               <option value="">Any</option>
-              {options.map((o) => <option key={o} value={o}>{o}</option>)}
+              {options.map((o) => <option key={o} value={o}>{filterKey === 'state' ? STATE_LABEL[o] : o}</option>)}
             </select>
+          ) : filterKey === 'skills' ? (
+            <div>
+              {skills.length > 0 && (
+                <ul className="mb-2 flex flex-wrap gap-1.5">
+                  {skills.map((skill) => (
+                    <li key={skill} className="inline-flex h-7 max-w-full items-center gap-1 rounded-full bg-[var(--powder)] pr-1 pl-2.5 text-sm text-[var(--paper)]">
+                      <span className="truncate">{skill}</span>
+                      <button type="button" aria-label={`Remove ${skill}`} className="rounded-full p-0.5 hover:bg-[var(--paper)]/10" onClick={() => setSkills((list) => list.filter((s) => s !== skill))}>
+                        <X className="size-3" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <input
+                className={field}
+                value={draft}
+                aria-label={label}
+                placeholder="Add a skill"
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter') return
+                  e.preventDefault()
+                  setSkills((list) => withSkill(list, draft))
+                  setDraft('')
+                }}
+              />
+            </div>
           ) : (
-            <input className={field} value={draft} aria-label={label} placeholder={filterKey === 'skills' ? 'Swift, React' : label} onChange={(e) => setDraft(e.target.value)} />
+            <input className={field} value={draft} aria-label={label} placeholder={label} onChange={(e) => setDraft(e.target.value)} />
           )}
           <div className="mt-3 flex gap-3">
             <button type="submit" className="text-sm text-[var(--paper)]">Apply</button>
@@ -294,7 +327,7 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
     <>
       <form className="mt-10 flex w-full min-w-0 max-w-full items-center gap-4" onSubmit={(e) => void onSubmit(e)}>
         <div className={`${pill} w-auto min-w-0 flex-1 basis-0 ${fullWidth ? '' : 'sm:w-64 sm:flex-none sm:basis-auto sm:focus-within:w-96'}`}>
-          <Search className="size-5 shrink-0 text-[var(--paper)]/50" />
+          <Search className="size-5 shrink-0 text-[var(--paper)]" />
           <input
             value={brief}
             onChange={(e) => setBrief(e.target.value)}
@@ -307,7 +340,7 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
           type="submit"
           size="sm"
           isLoading={busy}
-          className="shrink-0 rounded-full"
+          className="h-12 shrink-0 rounded-full border-2 border-[var(--paper)] bg-[var(--powder)] font-semibold text-[var(--paper)] opacity-100"
           disabled={!brief.trim()}
           leftIcon={<ThinkingOrb state="searching" size={20} theme="dark" />}
         >
@@ -332,11 +365,12 @@ export function SearchResults({ searchId }: { searchId: string }) {
       router.push('/402')
       throw new Error('quota')
     }
-    if (res.status === 401) {
-      router.push('/')
-      throw new Error('quota')
+    if (res.status === 401) throw new Error('Not authenticated.')
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null
+      if (body?.error === 'Invalid id' || res.status === 404) throw new Error('Invalid id.')
+      throw new Error('Search failed.')
     }
-    if (!res.ok) throw new Error(res.status === 404 ? 'Search not found.' : 'Search failed.')
     return (await res.json()) as SearchPayload
   }
 
@@ -347,51 +381,48 @@ export function SearchResults({ searchId }: { searchId: string }) {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ filters: body, preview: true, page }),
+        body: JSON.stringify({ filters: body, preview: true, page, search_id: id }),
       }))
     }
-    return read(await fetch(`/api/search/${id}?page=${page}`, { credentials: 'include' }))
+    return read(await fetch(`/api/search/${id}?page=${page}`, { credentials: 'include', cache: 'no-store' }))
   }
 
-  async function loadPage(id: string, page: number) {
+  const ticket = useRef(0)
+
+  async function showPage(
+    id: string,
+    page: number,
+    preview: { filters: SearchFilters; unsupported: string[] } | null,
+    nextLive?: { filters: SearchFilters; unsupported: string[] } | null,
+  ) {
+    const mine = ++ticket.current
     setBusy(true)
     setError(null)
     try {
-      setSearch(await fetchPage(id, page, live))
+      const data = await fetchPage(id, page, preview)
+      if (mine !== ticket.current) return
+      if (nextLive !== undefined) setLive(nextLive)
+      setSearch((prev) => ({ ...data, search_id: searchId, brief: data.brief ?? prev?.brief }))
+      if (page !== 1) document.getElementById('results')?.scrollIntoView({ block: 'start' })
     } catch (err) {
+      if (mine !== ticket.current) return
       if (err instanceof Error && err.message !== 'quota') setError(err.message)
     } finally {
-      setBusy(false)
+      if (mine === ticket.current) setBusy(false)
     }
   }
 
-  async function research(filters: SearchFilters, unsupported: string[]) {
-    setBusy(true)
-    setError(null)
-    try {
-      const data = await fetchPage(searchId, 1, { filters, unsupported })
-      setLive({ filters, unsupported })
-      setSearch({ ...data, search_id: searchId })
-    } catch (err) {
-      if (err instanceof Error && err.message !== 'quota') setError(err.message)
-    } finally {
-      setBusy(false)
-    }
+  function loadPage(id: string, page: number) {
+    void showPage(id, page, live)
+  }
+
+  function research(filters: SearchFilters, unsupported: string[]) {
+    void showPage(searchId, 1, { filters, unsupported }, { filters, unsupported })
   }
 
   useEffect(() => {
-    setLive(null)
-    void (async () => {
-      setBusy(true)
-      setError(null)
-      try {
-        setSearch(await fetchPage(searchId, 1, null))
-      } catch (err) {
-        if (err instanceof Error && err.message !== 'quota') setError(err.message)
-      } finally {
-        setBusy(false)
-      }
-    })()
+    void showPage(searchId, 1, null, null)
+    return () => { ticket.current += 1 }
     // load when the route id changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId])
@@ -403,6 +434,11 @@ export function SearchResults({ searchId }: { searchId: string }) {
 
   return (
     <>
+      {unsupported.length > 0 && (
+        <p className="mt-6 rounded-xl border border-[#1f7a4d] bg-[#e5f5ea] px-4 py-3 text-base text-[#14532d]" role="status">
+          Couldn't use {unsupported.join('; ')}. Showing candidates for the rest of the brief.
+        </p>
+      )}
       <SearchBox />
       <div className="mt-8 flex flex-wrap items-center gap-2">
         <span className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--paper)]/15 bg-white px-3 text-sm text-[var(--paper)]">
@@ -430,12 +466,6 @@ export function SearchResults({ searchId }: { searchId: string }) {
             }}
           />
         ))}
-        {unsupported.length > 0 && (
-          <span className="inline-flex h-9 items-center rounded-full border border-[var(--bamboo)]/50 px-3 text-sm text-[var(--bamboo)]" title={unsupported.join('; ')}>
-            Not in the data
-            <span className="ml-2 flex size-5 items-center justify-center rounded-full bg-[#d4654f] text-xs text-white">{unsupported.length}</span>
-          </span>
-        )}
         {setCount > 0 && (
           <button
             type="button"
@@ -447,7 +477,15 @@ export function SearchResults({ searchId }: { searchId: string }) {
         )}
       </div>
 
+      {search?.brief && (
+        <p className="mt-4 text-sm text-[var(--paper)]/70">
+          Saved to <Link href="/saved-briefs" className="underline underline-offset-4">Briefs</Link>.
+        </p>
+      )}
+
       {error && <p className="mt-6 text-base text-[var(--bamboo)]">{error}</p>}
+
+      {busy && !search && <p className="mt-16 text-[var(--paper)]/70">Loading candidates…</p>}
 
       {search && search.total === 0 && (
         <p className="mt-16 text-[var(--paper)]/70">
@@ -456,8 +494,8 @@ export function SearchResults({ searchId }: { searchId: string }) {
       )}
 
       {search && search.total > 0 && (
-        <div className="mt-10">
-          <p className="text-sm text-[var(--paper)]/60">{search.total} candidates</p>
+        <div id="results" className="mt-10 scroll-mt-24">
+          <p className="text-sm text-[var(--paper)]/60">{busy ? 'Loading page…' : `${search.total} candidates`}</p>
           <ul className="mt-4 divide-y divide-[var(--paper)]/10 border-y border-[var(--paper)]/10">
             {search.results.map((c) => (
               <li key={c.id}>

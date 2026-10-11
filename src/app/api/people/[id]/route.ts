@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { recruiterDb } from '@/lib/auth'
+import { requireRecruiter } from '@/lib/auth'
 
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/people/[id]'>) {
-  const c = await recruiterDb(req)
+  const c = await requireRecruiter(req)
   if (c.error) return c.error
 
   const { id } = await ctx.params

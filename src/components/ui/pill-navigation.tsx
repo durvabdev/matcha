@@ -26,7 +26,7 @@ export function PillNavigation({
             className={cn(
               'focus-ring rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
               current
-                ? 'bg-[var(--paper)] text-[var(--kiln)]'
+                ? 'bg-[var(--powder)] text-[var(--paper)]'
                 : 'bg-[var(--paper)]/10 text-[var(--paper)]/80 hover:bg-[var(--paper)]/15',
             )}
           >

@@ -132,5 +132,6 @@ export const searchRequestBody = z
     filters: z.unknown().optional(),
     preview: z.boolean().optional(),
     page: z.number().int().min(1).max(1000).optional(),
+    search_id: z.string().uuid().optional(),
   })
   .refine((b) => b.brief !== undefined || b.filters !== undefined, { message: 'brief or filters is required' })

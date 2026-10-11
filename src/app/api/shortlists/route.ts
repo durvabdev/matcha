@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { recruiterDb } from '@/lib/auth'
+import { requireRecruiter } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
-  const c = await recruiterDb(req)
+  const c = await requireRecruiter(req)
   if (c.error) return c.error
 
   // RLS limits this to the caller's company.
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const c = await recruiterDb(req)
+  const c = await requireRecruiter(req)
   if (c.error) return c.error
 
   const body = await req.json().catch(() => null)

@@ -9,8 +9,14 @@ export function searchesRemaining(plan: string, used: number) {
   return plan === 'paid' ? null : Math.max(0, 1 - used)
 }
 
+export async function companySearchesRemaining(db: SupabaseClient, companyId: string) {
+  const { data } = await db.from('company_plans').select('plan, searches_used').eq('company_id', companyId).maybeSingle()
+  if (!data) return null
+  return searchesRemaining(data.plan as string, data.searches_used as number)
+}
+
 export async function getSearchPage(db: SupabaseClient, searchId: string, page: number) {
-  const { data: search } = await db.from('searches').select('id, filters, total').eq('id', searchId).maybeSingle()
+  const { data: search } = await db.from('searches').select('id, brief, filters, total').eq('id', searchId).maybeSingle()
   if (!search) return { error: 'not_found' as const }
 
   const parsed = parseSearchFilters(search.filters)
@@ -28,6 +34,7 @@ export async function getSearchPage(db: SupabaseClient, searchId: string, page: 
   const results = await loadCandidateProfiles(db, (rows ?? []).map((r) => r.candidate_id as string))
   return {
     search_id: search.id as string,
+    brief: (search.brief as string | null) ?? null,
     filters: parsed.data.filters,
     unsupported: parsed.data.unsupported,
     total: search.total as number,

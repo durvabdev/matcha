@@ -41,9 +41,16 @@ test('fixtures match queries.json as sets', async () => {
   }
 })
 
-test('unsupported returns no rows', async () => {
+test('unsupported alone returns no rows', async () => {
   assert.deepEqual(await match({ unsupported: ['visa'] }), [])
-  assert.deepEqual(await match({ unsupported: true, role: 'Engineer' }), [])
+  assert.deepEqual(await match({ unsupported: true }), [])
+})
+
+test('unsupported note does not drop real filters', async () => {
+  const onlyRole = (await match({ role: 'Product Manager' })).map((r) => r.id)
+  const withNote = (await match({ role: 'Product Manager', unsupported: ['spoken language: Japanese'] })).map((r) => r.id)
+  assert.ok(onlyRole.length > 0)
+  assert.deepEqual(withNote, onlyRole)
 })
 
 test('empty filters are deterministic', async () => {

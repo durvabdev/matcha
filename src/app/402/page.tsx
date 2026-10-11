@@ -14,7 +14,7 @@ export default async function PaymentRequiredPage() {
           errorCode="402"
           badgeLabel="Error 402: Payment required"
           title="No more searches."
-          description="Unlock unlimited candidate searches with a paid plan. No one-search free-plan restriction. Upgrades are simulated in this demo. Subscription status is updated through verified Stripe webhook events. No payment is required."
+          description="The free plan includes one search. A paid plan is unlimited. Upgrades are simulated: subscription status changes only through verified Stripe webhook events. No payment is required."
         />
       </main>
     </div>

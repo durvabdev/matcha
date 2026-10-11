@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { formatFilterChip } from '@/lib/search/format'
 
 export type SavedBrief = {
   id: string
@@ -13,29 +12,17 @@ export type SavedBrief = {
   search_id: string | null
 }
 
-function Body({ brief, filters, created_at }: Pick<SavedBrief, 'brief' | 'filters' | 'created_at'>) {
-  const chips = Object.entries(filters).filter(([k]) => k !== 'unsupported')
+function Body({ brief, created_at }: Pick<SavedBrief, 'brief' | 'created_at'>) {
   return (
-    <>
-      <div className="flex items-center gap-4 px-6 py-4">
-        <span className="min-w-0 flex-1 truncate text-2xl font-medium">{brief}</span>
-        <span className="flex h-11 w-24 shrink-0 items-center justify-center rounded-full bg-[var(--powder)] text-lg font-medium text-[var(--text-primary)]">
-          Edit
-        </span>
-        <time dateTime={created_at} className="rounded-full bg-[var(--powder)] px-3 py-1 text-base text-[var(--paper)]">
-          {new Date(created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
-        </time>
-      </div>
-      {chips.length > 0 && (
-        <ul className="flex flex-wrap gap-2 px-6 pb-5">
-          {chips.map(([k, v]) => (
-            <li key={k} className="rounded-full bg-[var(--powder)] px-3 py-1 text-base text-[var(--paper)]">
-              {formatFilterChip(k, v)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
+    <div className="flex items-center gap-4 px-6 py-4">
+      <span className="min-w-0 flex-1 truncate text-2xl font-medium">{brief}</span>
+      <span className="flex h-11 shrink-0 items-center justify-center rounded-full bg-[var(--powder)] px-5 text-lg font-medium text-[var(--paper)]">
+        Edit
+      </span>
+      <time dateTime={created_at} className="flex h-11 shrink-0 items-center justify-center rounded-full bg-[var(--powder)] px-5 text-lg font-medium text-[var(--paper)]">
+        {new Date(created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+      </time>
+    </div>
   )
 }
 
@@ -73,11 +60,11 @@ export function BriefCard({ brief: b }: { brief: SavedBrief }) {
     <li className="rounded-2xl border border-[var(--paper)]/10 bg-white">
       {href ? (
         <Link href={href} className="focus-ring block rounded-2xl">
-          <Body brief={b.brief} filters={b.filters} created_at={b.created_at} />
+          <Body brief={b.brief} created_at={b.created_at} />
         </Link>
       ) : (
         <button type="button" disabled={busy} onClick={() => void open()} className="focus-ring block w-full rounded-2xl text-left">
-          <Body brief={b.brief} filters={b.filters} created_at={b.created_at} />
+          <Body brief={b.brief} created_at={b.created_at} />
         </button>
       )}
     </li>

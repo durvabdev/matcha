@@ -114,9 +114,68 @@ test('Acme/Globex isolation including RLS', async () => {
 
   const get = await json(`/api/search/${id}?page=1`, globex.token, undefined, 'GET')
   assert.equal(get.res.status, 404)
+  assert.equal(get.body.error, 'Invalid id')
+
+  const badId = await json('/api/search/not-a-uuid', acme.token, undefined, 'GET')
+  assert.equal(badId.res.status, 400)
+  assert.equal(badId.body.error, 'Invalid id')
 
   const { data } = await globex.db.from('searches').select('id').eq('id', id)
   assert.deepEqual(data, [])
+})
+
+test('preview without an owned search is 402', async () => {
+  await setPlan(acme.companyId, 'free', 0)
+  const { res } = await json('/api/search', acme.token, { filters: FILTERS, preview: true })
+  assert.equal(res.status, 402)
+  assert.equal((await used(acme.companyId)).searches_used, 0)
+})
+
+test('preview of an owned search does not spend quota', async () => {
+  await setPlan(acme.companyId, 'free', 0)
+  const created = await json('/api/search', acme.token, { filters: FILTERS })
+  assert.equal(created.res.status, 200)
+  const before = await used(acme.companyId)
+  const preview = await json('/api/search', acme.token, {
+    filters: FILTERS,
+    preview: true,
+    search_id: created.body.search_id,
+  })
+  assert.equal(preview.res.status, 200)
+  assert.equal((await used(acme.companyId)).searches_used, before.searches_used)
+
+  const other = await json('/api/search', globex.token, {
+    filters: FILTERS,
+    preview: true,
+    search_id: created.body.search_id,
+  })
+  assert.equal(other.res.status, 404)
+})
+
+test('Acme/Globex shortlist and saved brief isolation', async () => {
+  await setPlan(acme.companyId, 'paid', 0)
+  const created = await json('/api/shortlists', acme.token, { name: 'Acme only' })
+  assert.equal(created.res.status, 201)
+  const id = created.body.id as string
+  const { data: person } = await acme.db.from('candidates').select('id').limit(1).single()
+  const add = await api(`/api/shortlists/${id}/people/${person!.id}`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${acme.token}` },
+  })
+  assert.equal(add.status, 204)
+
+  const listed = await json('/api/shortlists', globex.token, undefined, 'GET')
+  assert.equal(listed.res.status, 200)
+  assert.equal((listed.body as { id: string }[]).some((s) => s.id === id), false)
+  const { data: lists } = await globex.db.from('shortlists').select('id').eq('id', id)
+  assert.deepEqual(lists, [])
+  const { data: members } = await globex.db.from('shortlist_people').select('candidate_id').eq('shortlist_id', id)
+  assert.deepEqual(members, [])
+
+  const search = await json('/api/search', acme.token, { brief: 'isolation brief for saved searches', filters: FILTERS })
+  assert.equal(search.res.status, 200)
+  const { data: briefs } = await globex.db.from('saved_briefs').select('id').eq('search_id', search.body.search_id)
+  assert.deepEqual(briefs, [])
 })
 
 test('GET does not increment searches_used', async () => {

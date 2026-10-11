@@ -41,9 +41,9 @@ export interface ButtonProps
 
 const variantStyles: Record<ButtonVariant, string> = {
   default:
-    'bg-[var(--text-primary)] text-[var(--bg)] hover:opacity-90 shadow-xs border border-transparent font-medium cursor-pointer',
+    'bg-[var(--powder)] text-[var(--paper)] hover:opacity-90 shadow-xs border border-[var(--paper)] font-medium cursor-pointer',
   primary:
-    'bg-[var(--text-primary)] text-[var(--bg)] hover:opacity-90 shadow-xs border border-transparent font-medium cursor-pointer',
+    'bg-[var(--powder)] text-[var(--paper)] hover:opacity-90 shadow-xs border border-[var(--paper)] font-medium cursor-pointer',
   secondary:
     'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)] cursor-pointer',
   outline:
