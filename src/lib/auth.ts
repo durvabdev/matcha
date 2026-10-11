@@ -40,3 +40,12 @@ export async function recruiterDb(req: NextRequest) {
   if (r.error) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   return r
 }
+
+// JSON-API variant: Bearer token only, 401 (not a redirect) when it is missing or invalid.
+export async function requireRecruiter(req: NextRequest) {
+  const token = req.headers.get('authorization')?.match(/^Bearer (.+)$/i)?.[1]
+  const r = await recruiterFromToken(token)
+  if (r.error === 'login') return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  if (r.error) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
+  return r
+}

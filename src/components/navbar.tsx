@@ -24,6 +24,7 @@ export function NavBar({ onSignOut }: { onSignOut?: () => void }) {
       <Link href="/" className="font-display text-xl text-[var(--text-primary)]">matcha</Link>
       <nav className="flex items-center gap-6">
         <Link href="/shortlists" className={item}>SHORTLISTS</Link>
+        <Link href="/saved-briefs" className={item}>BRIEFS</Link>
         <button type="button" className={item} onClick={signOut}>SIGN OUT</button>
       </nav>
     </header>
