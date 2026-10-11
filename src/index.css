@@ -6,7 +6,7 @@
 
 @theme inline {
     --font-heading: var(--font-display);
-    --font-display: "Zen Old Mincho", "Iowan Old Style", serif;
+    --font-display: "Schibsted Grotesk", "Avenir Next", sans-serif;
     --font-sans: "Schibsted Grotesk", "Avenir Next", sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -109,6 +109,13 @@
     margin: 0;
     background: var(--foam);
     color: var(--kiln);
+  }
+  /* Seed SVGs have no intrinsic size. Preflight height:auto lets them fill the grid cell in Safari. */
+  .candidate-page img[width='24'] {
+    width: 24px;
+    height: 24px;
+    max-width: 24px;
+    max-height: 24px;
   }
   .focus-ring:focus-visible {
     outline: 2px solid var(--bamboo);

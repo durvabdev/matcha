@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { NavBar } from '@/components/navbar'
 import { Login, type LoginFormData } from '@/components/easyui/login'
 import { login, logout } from '@/app/actions'
 
@@ -64,25 +65,11 @@ export default function App({ initialEmail }: { initialEmail: string | null }) {
 
       <section className="t-page" data-page-id="2" aria-label="Welcome">
         <div className="flex h-svh flex-col bg-[var(--kiln)]">
-          <header className="flex items-center justify-between px-6 py-6 sm:px-10">
-            <span className="font-display text-xl text-[var(--text-primary)]">matcha</span>
-            <button
-              type="button"
-              className="focus-ring rounded-sm text-sm font-bold text-[var(--text-primary)] underline-offset-4 hover:underline"
-              onClick={handleSignOut}
-            >
-              Sign out
-            </button>
-          </header>
-          <div className="flex flex-1 items-center px-6 pb-24 sm:px-10">
-            <div>
-              <strong className="t-stagger-line t-stagger-line--1 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
-                welcome {name}
-              </strong>
-              <span className="t-stagger-line t-stagger-line--2 mt-5 block max-w-[28ch] text-base leading-relaxed text-[#A1A1A1]">
-                This room is a placeholder.
-              </span>
-            </div>
+          <NavBar onSignOut={handleSignOut} />
+          <div className="flex h-1/2 items-center px-6 sm:px-10">
+            <strong className="t-stagger-line t-stagger-line--1 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
+              welcome {name}
+            </strong>
           </div>
         </div>
       </section>
