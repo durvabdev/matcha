@@ -29,7 +29,14 @@ export default async function SearchPage({ params }: { params: Promise<{ search_
     <div className="h-svh overflow-y-auto bg-[var(--kiln)] text-[var(--paper)]">
       <NavBar />
       <main className="mx-auto max-w-6xl px-6 pt-10 pb-24 sm:px-10">
-        <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">Candidates</h1>
+        <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">
+          Candidates
+          {owned.brief && (
+            <span className="mt-3 block text-2xl font-medium tracking-normal text-[var(--paper)]/70">
+              for brief: {owned.brief}
+            </span>
+          )}
+        </h1>
         <SearchResults searchId={search_id} />
       </main>
     </div>
