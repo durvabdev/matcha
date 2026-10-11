@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { SlidersHorizontal, X } from 'lucide-react'
 import { ThinkingOrb } from 'thinking-orbs'
+import { logout } from '@/app/actions'
 import { Button } from '@/components/easyui/button'
 import { PillNavigation } from '@/components/ui/pill-navigation'
 import type { SearchFilters } from '@/lib/saved-briefs/schema'
@@ -48,10 +49,6 @@ type SearchPayload = {
   results: Candidate[]
   page: number
 }
-
-const pill =
-  'flex h-12 items-center gap-3 rounded-full border-2 border-[var(--paper)] bg-[var(--powder)] px-4 transition-[width,border-color] duration-300'
-const pillInput = 'w-full min-w-0 flex-1 bg-transparent text-lg font-medium text-[var(--paper)] outline-none placeholder:font-medium placeholder:text-[var(--paper)]/70'
 
 function pageItems(page: number, count: number) {
   const start = count <= 12 ? 1 : Math.max(1, Math.min(page - 4, count - 11))
@@ -306,6 +303,11 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ brief: text }),
       })
+      if (res.status === 401 || res.status === 403) {
+        await logout()
+        router.refresh()
+        return
+      }
       if (res.status === 402) {
         router.push('/402')
         return
@@ -325,27 +327,33 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
 
   return (
     <>
-      <form className="mt-10 flex w-full min-w-0 max-w-full items-center gap-4" onSubmit={(e) => void onSubmit(e)}>
-        <div className={`${pill} w-auto min-w-0 flex-1 basis-0 ${fullWidth ? '' : 'sm:w-64 sm:flex-none sm:basis-auto sm:focus-within:w-96'}`}>
-          <Search className="size-5 shrink-0 text-[var(--paper)]" />
-          <input
+      <form className={`mt-10 w-full min-w-0 ${fullWidth ? '' : 'max-w-3xl'}`} onSubmit={(e) => void onSubmit(e)}>
+        <div className={`flex flex-col rounded-2xl bg-black px-5 pt-5 pb-4 ${fullWidth ? 'min-h-[22rem]' : ''}`}>
+          <textarea
             value={brief}
             onChange={(e) => setBrief(e.target.value)}
-            placeholder="Senior React engineers in New York"
+            placeholder="Senior React engineers in New York who know Swift and have at least 5 years of experience"
             aria-label="Search briefs"
-            className={pillInput}
+            rows={fullWidth ? 12 : 3}
+            className={`w-full resize-none bg-transparent text-white outline-none placeholder:text-white/45 ${fullWidth ? 'min-h-[18rem] text-2xl leading-snug' : 'text-lg'}`}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' || e.shiftKey) return
+              e.preventDefault()
+              e.currentTarget.form?.requestSubmit()
+            }}
           />
+          <div className="mt-3 flex justify-end">
+            <Button
+              type="submit"
+              size="sm"
+              className="h-10 shrink-0 rounded-full bg-white font-semibold text-black opacity-100"
+              disabled={!brief.trim() || busy}
+              leftIcon={<ThinkingOrb state="searching" size={20} theme="light" />}
+            >
+              Search
+            </Button>
+          </div>
         </div>
-        <Button
-          type="submit"
-          size="sm"
-          isLoading={busy}
-          className="h-12 shrink-0 rounded-full border-2 border-[var(--paper)] bg-[var(--powder)] font-semibold text-[var(--paper)] opacity-100"
-          disabled={!brief.trim()}
-          leftIcon={<ThinkingOrb state="searching" size={20} theme="dark" />}
-        >
-          Search
-        </Button>
       </form>
       {error && <p className="mt-4 text-base text-[var(--bamboo)]">{error}</p>}
     </>
@@ -439,7 +447,6 @@ export function SearchResults({ searchId }: { searchId: string }) {
           Couldn't use {unsupported.join('; ')}. Showing candidates for the rest of the brief.
         </p>
       )}
-      <SearchBox />
       <div className="mt-8 flex flex-wrap items-center gap-2">
         <span className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--paper)]/15 bg-white px-3 text-sm text-[var(--paper)]">
           <SlidersHorizontal className="size-4" />

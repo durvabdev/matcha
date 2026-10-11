@@ -16,14 +16,13 @@ export default async function Page({
   let email: string | null = null
   let initialPlan: CompanyPlan | undefined
   if (token && process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY) {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
-    const { data } = await supabase.auth.getClaims(token)
-    email = typeof data?.claims.email === 'string' ? data.claims.email : null
-
     const recruiter = await recruiterFromToken(token)
     if (!recruiter.error) {
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+      const { data } = await supabase.auth.getClaims(token)
+      email = typeof data?.claims.email === 'string' ? data.claims.email : null
       const { data: plan } = await recruiter.db
         .from('company_plans')
         .select('plan, searches_used')

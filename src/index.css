@@ -57,14 +57,14 @@
     --foam: #3d5248;
     --powder: #e8efe6;
     --bamboo: #b59a63;
-    --paper: #173028;
+    --paper: #0a0a0a;
     --background: #ffffff;
-    --foreground: #173028;
+    --foreground: #0a0a0a;
     --card: #ffffff;
     --card-foreground: #173028;
     --popover: #ffffff;
     --popover-foreground: #173028;
-    --primary: #173028;
+    --primary: #0a0a0a;
     --primary-foreground: #ffffff;
     --secondary: #e8efe6;
     --secondary-foreground: #173028;
@@ -76,7 +76,7 @@
     --border: color-mix(in oklab, #173028 15%, transparent);
     --input: #ffffff;
     --ring: #173028;
-    --text-primary: #173028;
+    --text-primary: #0a0a0a;
     --bg: #ffffff;
     --surface: #f4f7f3;
     --surface-hover: #e8efe6;
@@ -112,7 +112,7 @@
   body {
     margin: 0;
     background: #ffffff;
-    color: #173028;
+    color: #0a0a0a;
   }
   /* Seed SVGs have no intrinsic size. Preflight height:auto lets them fill the grid cell in Safari. */
   .candidate-page img[width='24'] {

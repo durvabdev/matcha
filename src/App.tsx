@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/navbar'
 import { Login, type LoginFormData } from '@/components/easyui/login'
-import { PlanIndicator, type CompanyPlan } from '@/components/plan-indicator'
+import type { CompanyPlan } from '@/components/plan-indicator'
 import { SearchBox } from '@/components/search-panel'
 import { login, logout } from '@/app/actions'
 
@@ -80,12 +80,12 @@ export default function App({
         <div className="flex min-h-full flex-col bg-[var(--kiln)]">
           <NavBar onSignOut={handleSignOut} />
           <div className="flex min-w-0 flex-1 flex-col px-6 pb-16 sm:px-10">
-            <strong className="t-stagger-line t-stagger-line--1 mt-8 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
-              Welcome {name}!
+            <strong className="t-stagger-line t-stagger-line--1 mt-8 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-black">
+              Welcome <span className="text-[#7d9b76]">{name}!</span>!
             </strong>
-            {name && initialPlan && <PlanIndicator plan={initialPlan} />}
-            <p className="mt-10 text-2xl font-bold text-[var(--paper)]">
-              Describe who you want in plain English. Matcha turns it into filters and shows the people.
+            <p className="mt-8 max-w-4xl text-xl leading-relaxed text-black">
+              Matcha is a recruiter search. Type who you want in plain English: a role, a city, a few skills, years of experience.
+              It turns that brief into filters and shows the people who match. Edit your search for free as many times as you want.
             </p>
             {name && <SearchBox fullWidth />}
           </div>
