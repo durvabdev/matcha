@@ -248,8 +248,21 @@ function EditMenu({ s }: { s: ShortlistRow }) {
   }
 
   return (
-    // z-30 while open so the menu paints over the cards below (their Edit buttons are z-10).
-    <div ref={ref} className={`relative h-11 w-24 shrink-0 ${open || mode ? 'z-30' : ''}`}>
+    <>
+      <AnimatePresence>
+        {(open || mode) && (
+          <motion.div
+            aria-hidden
+            className="fixed inset-0 z-20 bg-black/45 backdrop-blur-[3px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          />
+        )}
+      </AnimatePresence>
+      {/* z-30 while open so the menu sits above the veil and the cards below. */}
+      <div ref={ref} className={`relative h-11 w-24 shrink-0 ${open || mode ? 'z-30' : ''}`}>
       <div aria-hidden className="pointer-events-none absolute top-0 right-0 h-[220px] w-56" style={{ filter: GOO }}>
         <div className={`${shape} w-24!`} />
         <AnimatePresence>
@@ -316,6 +329,7 @@ function EditMenu({ s }: { s: ShortlistRow }) {
       )}
       {!open && !mode && error && <p className="absolute top-12 right-0 z-20 w-64 text-right text-base text-rose-400">{error}</p>}
     </div>
+    </>
   )
 }
 
