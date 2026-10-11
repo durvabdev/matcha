@@ -75,7 +75,7 @@ function NewShortlist() {
           aria-label="New shortlist name"
           className={pillInput}
         />
-        <Button type="submit" size="sm" variant="secondary" className="rounded-full bg-[#1f1f1f]" isLoading={busy} disabled={!name.trim()}>Create</Button>
+        <Button type="submit" size="sm" className="rounded-full" isLoading={busy} disabled={!name.trim()}>Create</Button>
       </div>
       <button type="button" aria-label="Cancel" onClick={() => setOpen(false)} className="focus-ring rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
         <X className="size-5" />

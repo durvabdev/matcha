@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireRecruiter } from '@/lib/auth'
 import { parseSearchFilters, searchRequestBody, toStoredFilters } from '@/lib/search/schema'
 import { extractFilters } from '@/lib/search/extractor'
-import { createSearch, previewSearch } from '@/lib/search/service'
-import { createSavedBrief } from '@/lib/saved-briefs/service'
+import { createSearch, getSearchPage, previewSearch } from '@/lib/search/service'
+import { createSavedBrief, findLatestSearchForBrief } from '@/lib/saved-briefs/service'
 
 const MAX_BODY_CHARS = 16 * 1024
 
@@ -19,6 +19,14 @@ export async function POST(req: NextRequest) {
 
   const body = searchRequestBody.safeParse(json)
   if (!body.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+
+  if (body.data.brief && !body.data.preview) {
+    const { data: existing } = await findLatestSearchForBrief(c.db, body.data.brief)
+    if (existing?.search_id) {
+      const page = await getSearchPage(c.db, existing.search_id, 1)
+      if (!('error' in page)) return NextResponse.json(page)
+    }
+  }
 
   let parsed
   if (body.data.filters !== undefined) {

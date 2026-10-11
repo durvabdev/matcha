@@ -183,9 +183,21 @@ test('POST brief with filters saves a brief linked to the search', async () => {
   assert.equal(data![0].search_id, body.search_id)
 })
 
-test('POST brief without extractor is 502, not a silent mock', async () => {
+test('POST same brief again reuses the last search', async () => {
   await setPlan(acme.companyId, 'paid', 0)
-  const { res } = await json('/api/search', acme.token, { brief: 'mobile engineers who know Swift' })
+  const first = await json('/api/search', acme.token, { brief: 'reuse this brief please', filters: FILTERS })
+  assert.equal(first.res.status, 200)
+  const afterFirst = await used(acme.companyId)
+  const second = await json('/api/search', acme.token, { brief: 'Reuse this brief please' })
+  assert.equal(second.res.status, 200)
+  assert.equal(second.body.search_id, first.body.search_id)
+  assert.equal((await used(acme.companyId)).searches_used, afterFirst.searches_used)
+})
+
+test('POST brief without extractor is 502, not a silent mock', async () => {
+  if (process.env.OPENAI_API_KEY) return
+  await setPlan(acme.companyId, 'paid', 0)
+  const { res } = await json('/api/search', acme.token, { brief: 'brand new brief never saved before' })
   assert.equal(res.status, 502)
   assert.equal((await used(acme.companyId)).searches_used, 0)
 })

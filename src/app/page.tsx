@@ -11,6 +11,7 @@ export default async function Page({
   searchParams: Promise<{ search?: string; upgrade?: string }>
 }) {
   const q = await searchParams
+  if (q.upgrade === '1' || q.upgrade === 'true') redirect('/402')
   const token = (await cookies()).get('matcha_session')?.value
   let email: string | null = null
   let initialPlan: CompanyPlan | undefined
@@ -33,6 +34,5 @@ export default async function Page({
     }
   }
   if (typeof q.search === 'string' && q.search) redirect(`/search/${q.search}`)
-  const initialUpgrade = q.upgrade === '1' || q.upgrade === 'true'
-  return <App initialEmail={email} initialPlan={initialPlan} initialUpgrade={initialUpgrade} />
+  return <App initialEmail={email} initialPlan={initialPlan} />
 }

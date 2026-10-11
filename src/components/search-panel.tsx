@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { ThinkingOrb } from 'thinking-orbs'
 import { Button } from '@/components/easyui/button'
-import { UpgradeDialog } from '@/components/plan-indicator'
 import { PillNavigation } from '@/components/ui/pill-navigation'
 import type { SearchFilters } from '@/lib/saved-briefs/schema'
 
@@ -260,7 +259,6 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
   const [brief, setBrief] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [upgrade, setUpgrade] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -276,8 +274,7 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
         body: JSON.stringify({ brief: text }),
       })
       if (res.status === 402) {
-        setUpgrade(true)
-        router.refresh()
+        router.push('/402')
         return
       }
       if (res.status === 422) throw new Error('Could not understand that brief.')
@@ -318,7 +315,6 @@ export function SearchBox({ fullWidth = false }: { fullWidth?: boolean }) {
         </Button>
       </form>
       {error && <p className="mt-4 text-base text-[var(--bamboo)]">{error}</p>}
-      <UpgradeDialog open={upgrade} onClose={() => setUpgrade(false)} />
     </>
   )
 }
@@ -328,14 +324,12 @@ export function SearchResults({ searchId }: { searchId: string }) {
   const [search, setSearch] = useState<SearchPayload | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [upgrade, setUpgrade] = useState(false)
   const [live, setLive] = useState<{ filters: SearchFilters; unsupported: string[] } | null>(null)
   const [openFilter, setOpenFilter] = useState<keyof SearchFilters | null>(null)
 
   async function read(res: Response) {
     if (res.status === 402) {
-      setUpgrade(true)
-      router.refresh()
+      router.push('/402')
       throw new Error('quota')
     }
     if (res.status === 401) {
@@ -455,7 +449,13 @@ export function SearchResults({ searchId }: { searchId: string }) {
 
       {error && <p className="mt-6 text-base text-[var(--bamboo)]">{error}</p>}
 
-      {search && (
+      {search && search.total === 0 && (
+        <p className="mt-16 text-[var(--paper)]/70">
+          No candidates found. Consider removing some filters.
+        </p>
+      )}
+
+      {search && search.total > 0 && (
         <div className="mt-10">
           <p className="text-sm text-[var(--paper)]/60">{search.total} candidates</p>
           <ul className="mt-4 divide-y divide-[var(--paper)]/10 border-y border-[var(--paper)]/10">
@@ -471,7 +471,6 @@ export function SearchResults({ searchId }: { searchId: string }) {
               </li>
             ))}
           </ul>
-          {search.results.length === 0 && <p className="mt-8 text-[var(--paper)]/60">No candidates match.</p>}
           {pages > 1 && (
             <PillNavigation
               className="mt-6 w-full justify-center"
@@ -482,7 +481,6 @@ export function SearchResults({ searchId }: { searchId: string }) {
           )}
         </div>
       )}
-      <UpgradeDialog open={upgrade} onClose={() => setUpgrade(false)} />
     </>
   )
 }

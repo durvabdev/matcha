@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/navbar'
 import { Login, type LoginFormData } from '@/components/easyui/login'
-import { PlanIndicator, UpgradeDialog, type CompanyPlan } from '@/components/plan-indicator'
+import { PlanIndicator, type CompanyPlan } from '@/components/plan-indicator'
 import { SearchBox } from '@/components/search-panel'
 import { login, logout } from '@/app/actions'
 
@@ -16,17 +16,14 @@ function nameFromEmail(email: string) {
 export default function App({
   initialEmail,
   initialPlan,
-  initialUpgrade = false,
 }: {
   initialEmail: string | null
   initialPlan?: CompanyPlan
-  initialUpgrade?: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState<string | null>(initialEmail ? nameFromEmail(initialEmail) : null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [upgrade, setUpgrade] = useState(initialUpgrade)
 
   async function handleSubmit({ email, password }: LoginFormData) {
     setError(null)
@@ -93,7 +90,6 @@ export default function App({
             {name && <SearchBox fullWidth />}
           </div>
         </div>
-        <UpgradeDialog open={upgrade} onClose={() => setUpgrade(false)} />
       </section>
     </div>
   )
