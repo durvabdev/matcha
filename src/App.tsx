@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/navbar'
 import { Login, type LoginFormData } from '@/components/easyui/login'
+import { PlanIndicator, type CompanyPlan } from '@/components/plan-indicator'
 import { login, logout } from '@/app/actions'
 
 function nameFromEmail(email: string) {
@@ -10,7 +12,14 @@ function nameFromEmail(email: string) {
   return local || 'friend'
 }
 
-export default function App({ initialEmail }: { initialEmail: string | null }) {
+export default function App({
+  initialEmail,
+  initialPlan,
+}: {
+  initialEmail: string | null
+  initialPlan?: CompanyPlan
+}) {
+  const router = useRouter()
   const [name, setName] = useState<string | null>(initialEmail ? nameFromEmail(initialEmail) : null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -21,7 +30,10 @@ export default function App({ initialEmail }: { initialEmail: string | null }) {
     try {
       const result = await login(email, password)
       if ('error' in result) setError(result.error)
-      else setName(nameFromEmail(email))
+      else {
+        setName(nameFromEmail(email))
+        router.refresh()
+      }
     } catch {
       setError('Could not sign in. Try again.')
     } finally {
@@ -66,10 +78,11 @@ export default function App({ initialEmail }: { initialEmail: string | null }) {
       <section className="t-page" data-page-id="2" aria-label="Welcome">
         <div className="flex h-svh flex-col bg-[var(--kiln)]">
           <NavBar onSignOut={handleSignOut} />
-          <div className="flex h-1/2 items-center px-6 sm:px-10">
+          <div className="flex h-1/2 flex-col justify-center px-6 sm:px-10">
             <strong className="t-stagger-line t-stagger-line--1 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
               welcome {name}
             </strong>
+            {name && initialPlan && <PlanIndicator plan={initialPlan} />}
           </div>
         </div>
       </section>
