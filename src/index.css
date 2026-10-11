@@ -49,35 +49,35 @@
 }
 
 :root {
-    --kiln: #173028;
-    --foam: #cfe0c8;
-    --powder: #3f5c38;
+    --kiln: #ffffff;
+    --foam: #3d5248;
+    --powder: #e8efe6;
     --bamboo: #b59a63;
-    --paper: #e7ede3;
-    --background: #cfe0c8;
+    --paper: #173028;
+    --background: #ffffff;
     --foreground: #173028;
-    --card: #0e0e0e;
-    --card-foreground: #fafafa;
-    --popover: #0e0e0e;
-    --popover-foreground: #fafafa;
-    --primary: #3f5c38;
-    --primary-foreground: #e7ede3;
-    --secondary: #173028;
-    --secondary-foreground: #cfe0c8;
-    --muted: #b7cbb2;
+    --card: #ffffff;
+    --card-foreground: #173028;
+    --popover: #ffffff;
+    --popover-foreground: #173028;
+    --primary: #173028;
+    --primary-foreground: #ffffff;
+    --secondary: #e8efe6;
+    --secondary-foreground: #173028;
+    --muted: #e8efe6;
     --muted-foreground: #3d5248;
-    --accent: #b59a63;
+    --accent: #e8efe6;
     --accent-foreground: #173028;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: color-mix(in oklab, #173028 18%, transparent);
-    --input: #1f1f1f;
-    --ring: #3f5c38;
-    --text-primary: #fafafa;
-    --bg: #0e0e0e;
-    --surface: #141414;
-    --surface-hover: #1a1a1a;
-    --border-hover: #4a4a4a;
-    --text-secondary: #a1a1a1;
+    --border: color-mix(in oklab, #173028 15%, transparent);
+    --input: #ffffff;
+    --ring: #173028;
+    --text-primary: #173028;
+    --bg: #ffffff;
+    --surface: #f4f7f3;
+    --surface-hover: #e8efe6;
+    --border-hover: #3f5c38;
+    --text-secondary: #3d5248;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -107,8 +107,8 @@
   }
   body {
     margin: 0;
-    background: var(--foam);
-    color: var(--kiln);
+    background: #ffffff;
+    color: #173028;
   }
   /* Seed SVGs have no intrinsic size. Preflight height:auto lets them fill the grid cell in Safari. */
   .candidate-page img[width='24'] {
@@ -121,6 +121,43 @@
     outline: 2px solid var(--bamboo);
     outline-offset: 2px;
   }
+}
+
+.years-range {
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.years-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: transparent;
+}
+.years-range::-webkit-slider-thumb {
+  appearance: none;
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  margin-top: -7px;
+  border: 1px solid color-mix(in oklab, var(--paper) 25%, transparent);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  cursor: pointer;
+}
+.years-range::-moz-range-track {
+  height: 2px;
+  background: transparent;
+  border: 0;
+}
+.years-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border: 1px solid color-mix(in oklab, var(--paper) 25%, transparent);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  cursor: pointer;
 }
 
 /* https://transitions.dev/library.html — page side-by-side */

@@ -130,5 +130,7 @@ export const searchRequestBody = z
   .strictObject({
     brief: text(2000).optional(),
     filters: z.unknown().optional(),
+    preview: z.boolean().optional(),
+    page: z.number().int().min(1).max(1000).optional(),
   })
   .refine((b) => b.brief !== undefined || b.filters !== undefined, { message: 'brief or filters is required' })

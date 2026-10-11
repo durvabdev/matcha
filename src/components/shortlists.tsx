@@ -37,7 +37,7 @@ function useApi() {
 }
 
 const pill =
-  'flex h-12 items-center gap-3 rounded-full border border-white/15 bg-black px-4 transition-[width,border-color] duration-300 focus-within:border-white/40'
+  'flex h-12 items-center gap-3 rounded-full border border-[var(--paper)]/15 bg-white px-4 transition-[width,border-color] duration-300 focus-within:border-[var(--paper)]/40'
 const pillInput = 'min-w-0 flex-1 bg-transparent text-lg text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]'
 
 function NewShortlist() {
@@ -48,7 +48,7 @@ function NewShortlist() {
   // Collapsed: a button. Click it and it turns into a name field in the same spot.
   if (!open) {
     return (
-      <Button variant="secondary" className="shrink-0 rounded-full bg-black hover:bg-black/60" leftIcon={<Plus className="size-5" />} onClick={() => setOpen(true)}>
+      <Button variant="secondary" className="shrink-0 rounded-full" leftIcon={<Plus className="size-5" />} onClick={() => setOpen(true)}>
         Create shortlist
       </Button>
     )
@@ -156,7 +156,7 @@ function ShortlistCard({ s, forceOpen }: { s: ShortlistRow; forceOpen: boolean }
   const show = open || forceOpen
 
   return (
-    <li className="rounded-2xl border border-white/10 bg-black">
+    <li className="rounded-2xl border border-[var(--paper)]/10 bg-white">
       <div className="flex items-center gap-4 px-6 py-4">
         {/* Nothing to collapse when the list is empty, so no chevron. */}
         <button type="button" aria-expanded={show} disabled={s.people.length === 0} onClick={() => setOpen(!show)} className="focus-ring flex min-w-0 flex-1 items-center gap-4 rounded-md text-left">
@@ -169,7 +169,7 @@ function ShortlistCard({ s, forceOpen }: { s: ShortlistRow; forceOpen: boolean }
         </span>
       </div>
       {show && s.people.length > 0 && (
-          <ul className="divide-y divide-white/5 rounded-b-2xl border-t border-white/10 bg-[#0d0d0d]">
+          <ul className="divide-y divide-[var(--paper)]/5 rounded-b-2xl border-t border-[var(--paper)]/10 bg-white">
             {s.people.map((p) => (
               <li key={p.id} className="flex items-center gap-4 py-3 pr-6 pl-15">
                 <Link href={`/people/${p.id}`} className="min-w-0 flex-1 truncate text-xl hover:underline">
@@ -191,7 +191,7 @@ function ShortlistCard({ s, forceOpen }: { s: ShortlistRow; forceOpen: boolean }
 // layer only, so the text stays sharp). Add / rename open a small field in place.
 const GOO = 'url(#goo)'
 const ROW = 52 // option height 44 + gap 8
-const shape = 'absolute right-0 top-0 h-11 w-56 rounded-full bg-[#2a2a2a]'
+const shape = 'absolute right-0 top-0 h-11 w-56 rounded-full bg-[var(--powder)]'
 
 function EditMenu({ s }: { s: ShortlistRow }) {
   const { call, busy, error } = useApi()
@@ -298,7 +298,7 @@ function EditMenu({ s }: { s: ShortlistRow }) {
               type="button"
               role="menuitem"
               onClick={o.run}
-              className={`focus-ring absolute top-0 right-0 z-10 h-11 w-56 rounded-full px-5 text-left text-lg hover:bg-white/10 ${o.danger ? 'text-rose-400' : 'text-[var(--text-primary)]'}`}
+              className={`focus-ring absolute top-0 right-0 z-10 h-11 w-56 rounded-full px-5 text-left text-lg hover:bg-[var(--paper)]/10 ${o.danger ? 'text-rose-400' : 'text-[var(--text-primary)]'}`}
               initial={{ y: 0, opacity: 0 }}
               animate={{ y: (i + 1) * ROW, opacity: 1 }}
               exit={{ y: 0, opacity: 0 }}
@@ -311,7 +311,7 @@ function EditMenu({ s }: { s: ShortlistRow }) {
 
       {mode && (
         <form onSubmit={submit} className="absolute top-14 right-0 z-20 w-80">
-          <div className="flex h-11 items-center gap-2 rounded-full bg-[#2a2a2a] pr-1 pl-5">
+          <div className="flex h-11 items-center gap-2 rounded-full border border-[var(--paper)]/15 bg-white pr-1 pl-5">
             <input
               autoFocus
               value={text}

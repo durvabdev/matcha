@@ -1,12 +1,21 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { StoredFilters } from './schema'
 
-const columns = 'id, brief, filters, created_at'
+const columns = 'id, brief, filters, created_at, search_id'
 
-export function createSavedBrief(db: SupabaseClient, companyId: string, input: { brief: string; filters: StoredFilters }) {
+export function createSavedBrief(
+  db: SupabaseClient,
+  companyId: string,
+  input: { brief: string; filters: StoredFilters; search_id?: string },
+) {
   return db
     .from('saved_briefs')
-    .insert({ company_id: companyId, brief: input.brief, filters: input.filters })
+    .insert({
+      company_id: companyId,
+      brief: input.brief.charAt(0).toUpperCase() + input.brief.slice(1).toLowerCase(),
+      filters: input.filters,
+      search_id: input.search_id ?? null,
+    })
     .select(columns)
     .single()
 }

@@ -27,7 +27,7 @@ export function PillNavigation({
               'focus-ring rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
               current
                 ? 'bg-[var(--paper)] text-[var(--kiln)]'
-                : 'bg-black/40 text-[var(--paper)]/80 hover:bg-black/60',
+                : 'bg-[var(--paper)]/10 text-[var(--paper)]/80 hover:bg-[var(--paper)]/15',
             )}
           >
             {item.label}

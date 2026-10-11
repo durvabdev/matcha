@@ -27,7 +27,7 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-title"
-        className="w-full max-w-lg rounded-2xl border border-white/15 bg-black/75 p-6 text-[var(--paper)] shadow-xl backdrop-blur-xl"
+        className="w-full max-w-lg rounded-2xl border border-[var(--paper)]/15 bg-white p-6 text-[var(--paper)] shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -44,7 +44,7 @@ export function UpgradeDialog({ open, onClose }: { open: boolean; onClose: () =>
         <p className="mt-5 text-sm text-[var(--paper)]/60">
           Upgrades are simulated in this demo. Subscription status is updated through verified Stripe webhook events. No payment is required.
         </p>
-        <Button variant="secondary" fullWidth className="mt-6 rounded-full border-white/20 bg-black/80 text-[var(--paper)] backdrop-blur-md hover:bg-black" onClick={onClose}>
+        <Button variant="secondary" fullWidth className="mt-6 rounded-full" onClick={onClose}>
           Got it
         </Button>
       </div>
@@ -60,7 +60,7 @@ export function PlanIndicator({ plan }: { plan: CompanyPlan }) {
   return (
     <>
       {/* Same inset as the nav (parent px-6 / sm:px-10), so this spans the bar. */}
-      <div className="mt-8 w-full rounded-2xl border border-white/15 bg-black px-5 py-4 text-[var(--paper)]">
+      <div className="mt-8 w-full rounded-2xl border border-[var(--paper)]/15 bg-white px-5 py-4 text-[var(--paper)]">
         <div className="flex items-center justify-between gap-4">
           <p className="flex items-center gap-2 text-lg font-semibold">
             <Zap className="size-4" />
@@ -70,7 +70,7 @@ export function PlanIndicator({ plan }: { plan: CompanyPlan }) {
             <Button
               variant="outline"
               size="sm"
-              className="rounded-full border-white/30 bg-transparent text-base text-[var(--paper)] hover:bg-white/10"
+              className="rounded-full border-[var(--paper)]/30 bg-transparent text-base text-[var(--paper)] hover:bg-[var(--paper)]/10"
               onClick={() => setOpen(true)}
             >
               Upgrade
@@ -82,7 +82,7 @@ export function PlanIndicator({ plan }: { plan: CompanyPlan }) {
         </p>
         {free && (
           <div
-            className="mt-3 h-1.5 bg-white/15"
+            className="mt-3 h-1.5 bg-[var(--paper)]/15"
             role="meter"
             aria-label="Free searches remaining"
             aria-valuemin={0}

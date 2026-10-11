@@ -66,7 +66,7 @@ export default function App({
               title="Come in"
               description="Sign in to your account."
               logo={
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#141414] font-display text-lg text-[#cfe0c8]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--paper)]/20 bg-white font-display text-lg text-[var(--paper)]">
                   抹
                 </span>
               }
@@ -82,12 +82,15 @@ export default function App({
       <section className="t-page overflow-y-auto" data-page-id="2" aria-label="Welcome">
         <div className="flex min-h-full flex-col bg-[var(--kiln)]">
           <NavBar onSignOut={handleSignOut} />
-          <div className="flex flex-1 flex-col px-6 pb-16 sm:px-10">
+          <div className="flex min-w-0 flex-1 flex-col px-6 pb-16 sm:px-10">
             <strong className="t-stagger-line t-stagger-line--1 mt-8 font-display text-[clamp(2.4rem,8vw,5.5rem)] font-semibold leading-[0.95] text-[var(--text-primary)]">
-              welcome {name}
+              Welcome {name}!
             </strong>
             {name && initialPlan && <PlanIndicator plan={initialPlan} />}
-            {name && <SearchBox />}
+            <p className="mt-10 text-2xl font-bold text-[var(--paper)]">
+              Describe who you want in plain English. Matcha turns it into filters and shows the people.
+            </p>
+            {name && <SearchBox fullWidth />}
           </div>
         </div>
         <UpgradeDialog open={upgrade} onClose={() => setUpgrade(false)} />

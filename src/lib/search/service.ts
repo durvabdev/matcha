@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { StoredFilters } from './schema'
-import { parseSearchFilters } from './schema'
-import { loadCandidateProfiles } from './query'
+import { parseSearchFilters, toStoredFilters } from './schema'
+import { loadCandidateProfiles, matchCandidates } from './query'
 
 export const PAGE_SIZE = 20
 
@@ -33,6 +33,26 @@ export async function getSearchPage(db: SupabaseClient, searchId: string, page: 
     total: search.total as number,
     results,
     page,
+  }
+}
+
+export async function previewSearch(db: SupabaseClient, filters: StoredFilters, page: number) {
+  try {
+    const parsed = parseSearchFilters(filters)
+    if (!parsed.success) return { error: 'load' as const }
+    const matches = await matchCandidates(db, toStoredFilters(parsed.data))
+    const from = (page - 1) * PAGE_SIZE
+    const results = await loadCandidateProfiles(db, matches.slice(from, from + PAGE_SIZE).map((m) => m.id))
+    return {
+      search_id: '',
+      filters: parsed.data.filters,
+      unsupported: parsed.data.unsupported,
+      total: matches.length,
+      results,
+      page,
+    }
+  } catch {
+    return { error: 'load' as const }
   }
 }
 

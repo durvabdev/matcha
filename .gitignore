@@ -25,3 +25,4 @@ supabase/seeds/
 *.njsproj
 *.sln
 *.sw?
+.env

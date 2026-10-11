@@ -30,7 +30,7 @@ export function RunSearch({ brief, filters }: { brief: string; filters: Record<s
   }
 
   return (
-    <Button type="button" size="sm" variant="outline" isLoading={busy} className="rounded-full border-white/30 bg-transparent text-[var(--paper)] hover:bg-white/10" onClick={() => void run()}>
+    <Button type="button" size="sm" variant="outline" isLoading={busy} className="rounded-full" onClick={() => void run()}>
       Run
     </Button>
   )

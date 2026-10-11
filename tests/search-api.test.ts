@@ -172,6 +172,17 @@ test('unsupported filters return nobody', async () => {
   assert.deepEqual(body.results, [])
 })
 
+test('POST brief with filters saves a brief linked to the search', async () => {
+  await setPlan(acme.companyId, 'paid', 0)
+  const { res, body } = await json('/api/search', acme.token, { brief: 'mobile engineers who know Swift', filters: FILTERS })
+  assert.equal(res.status, 200)
+  const { data, error } = await acme.db.from('saved_briefs').select('search_id, brief').eq('search_id', body.search_id)
+  assert.ifError(error)
+  assert.equal(data?.length, 1)
+  assert.equal(data![0].brief, 'Mobile engineers who know swift')
+  assert.equal(data![0].search_id, body.search_id)
+})
+
 test('POST brief without extractor is 502, not a silent mock', async () => {
   await setPlan(acme.companyId, 'paid', 0)
   const { res } = await json('/api/search', acme.token, { brief: 'mobile engineers who know Swift' })

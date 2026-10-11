@@ -109,13 +109,13 @@ isOneToOne: false
                   ]
                 },"saved_briefs": {
                   Row: {
-                    "brief": string,"company_id": string,"created_at": string,"filters": NonNullable<Json>,"id": string
+                    "brief": string,"company_id": string,"created_at": string,"filters": NonNullable<Json>,"id": string,"search_id": string | null
                   }
                   Insert: {
-                    "brief": string,"company_id": string,"created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string
+                    "brief": string,"company_id": string,"created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"search_id"?: string | null
                   }
                   Update: {
-                    "brief"?: string,"company_id"?: string,"created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string
+                    "brief"?: string,"company_id"?: string,"created_at"?: string,"filters"?: NonNullable<Json>,"id"?: string,"search_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -123,6 +123,13 @@ isOneToOne: false
       columns: ["company_id"]
 isOneToOne: false
       referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },
+                    {
+      foreignKeyName: "saved_briefs_search_id_fkey"
+      columns: ["search_id"]
+isOneToOne: false
+      referencedRelation: "searches"
       referencedColumns: ["id"]
     }
                   ]

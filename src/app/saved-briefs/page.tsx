@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { recruiterFromToken } from '@/lib/auth'
 import { listSavedBriefs } from '@/lib/saved-briefs/service'
@@ -6,7 +7,7 @@ import { NavBar } from '@/components/navbar'
 import { RunSearch } from '@/components/run-search'
 import { formatFilterChip } from '@/lib/search/format'
 
-type Brief = { id: string; brief: string; filters: Record<string, unknown>; created_at: string }
+type Brief = { id: string; brief: string; filters: Record<string, unknown>; created_at: string; search_id: string | null }
 
 export default async function SavedBriefsPage() {
   const r = await recruiterFromToken((await cookies()).get('matcha_session')?.value)
@@ -30,13 +31,18 @@ export default async function SavedBriefsPage() {
             {briefs.map((b) => {
               const filters = Object.entries(b.filters)
               return (
-                <li key={b.id} className="rounded-2xl border border-white/10 bg-black px-6 py-5">
+                <li key={b.id} className="rounded-2xl border border-[var(--paper)]/10 bg-white px-6 py-5">
                   <div className="flex items-baseline gap-4">
                     <p className="min-w-0 flex-1 text-2xl font-medium">{b.brief}</p>
                     <div className="flex shrink-0 items-center gap-3">
                       <time dateTime={b.created_at} className="text-lg text-[var(--foam)]/60">
                         {new Date(b.created_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
                       </time>
+                      {b.search_id && (
+                        <Link href={`/search/${b.search_id}`} className="text-lg text-[var(--foam)] hover:underline">
+                          Candidates
+                        </Link>
+                      )}
                       <RunSearch brief={b.brief} filters={b.filters} />
                     </div>
                   </div>
